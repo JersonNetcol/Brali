@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Para ti — Sorpresa</title>
+    <meta
+      name="description"
+      content="Pequeña web romántica: mensajes aleatorios, Spotify embed, modo oscuro y PWA simple."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: linear-gradient(180deg, #fff 0%, #fffaf6 100%);
+        --card: rgba(255, 255, 255, 0.85);
+        --text: #0b1320;
+        --muted: #6b7280;
+        --accent: #ff6b81;
+        --glass: rgba(255, 255, 255, 0.6);
+        --radius: 16px;
+        --shadow: 0 8px 30px rgba(12, 18, 30, 0.08);
+        --glass-border: rgba(255, 255, 255, 0.6);
+      }
+      [data-theme="dark"] {
+        --bg: linear-gradient(180deg, #071025 0%, #07121a 100%);
+        --card: rgba(8, 10, 14, 0.6);
+        --text: #e6eef8;
+        --muted: #9aa6bb;
+        --accent: #ff7a9b;
+        --glass: rgba(255, 255, 255, 0.03);
+        --shadow: 0 10px 40px rgba(2, 6, 23, 0.6);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto,
+          Arial;
+        background: var(--bg);
+        color: var(--text);
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 28px;
+      }
+
+      /* Card */
+      .card {
+        width: 100%;
+        max-width: 420px;
+        border-radius: calc(var(--radius) + 6px);
+        background: var(--card);
+        box-shadow: var(--shadow);
+        padding: 20px;
+        position: relative;
+        overflow: visible;
+        backdrop-filter: blur(8px) saturate(1.05);
+        transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.2, 1),
+          box-shadow 0.28s;
+      }
+      .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 50px rgba(8, 12, 30, 0.12);
+      }
+
+      /* Header */
+      .head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .brand {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #ffd2e0, #ffd9f0);
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        color: white;
+        box-shadow: 0 6px 18px rgba(255, 107, 129, 0.18);
+      }
+      .title {
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.2px;
+      }
+      .subtitle {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* message */
+      .message {
+        margin: 6px 0 14px;
+        font-size: 17px;
+        line-height: 1.45;
+        padding: 14px 14px;
+        border-radius: 12px;
+        background: var(--glass);
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        color: var(--text);
+        transition: transform 0.18s ease, opacity 0.18s;
+      }
+
+      /* Cover (mini) */
+      .cover {
+        width: 100%;
+        height: 190px;
+        border-radius: 12px;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: 1fr auto;
+        background: linear-gradient(135deg, #ffeff3, #fff1e6);
+        margin-bottom: 12px;
+        position: relative;
+        align-items: end;
+        padding: 14px;
+        gap: 8px;
+      }
+      .cover .meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text);
+      }
+      .art {
+        width: 58px;
+        height: 58px;
+        border-radius: 10px;
+        background: #eee;
+        flex: 0 0 58px;
+        object-fit: cover;
+        box-shadow: 0 8px 24px rgba(12, 18, 30, 0.06);
+      }
+      .song-title {
+        font-weight: 600;
+        font-size: 15px;
+      }
+      .song-artist {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* Controls */
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .left-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .btn {
+        border: 0;
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        background: transparent;
+        color: var(--text);
+        transition: transform 0.12s ease, box-shadow 0.12s;
+      }
+      .btn:active {
+        transform: translateY(1px);
+      }
+      .btn.ghost {
+        border: 1px solid rgba(12, 18, 30, 0.06);
+        background: transparent;
+      }
+      .btn.primary {
+        background: linear-gradient(90deg, var(--accent), #ff9aa3);
+        color: white;
+        box-shadow: 0 8px 24px rgba(255, 107, 129, 0.12);
+      }
+      .btn.icon {
+        padding: 8px;
+        border-radius: 10px;
+        display: inline-grid;
+        place-items: center;
+        width: 40px;
+        height: 40px;
+      }
+
+      /* spotify container */
+      .spotify {
+        width: 100%;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 12px;
+        background: transparent;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+      }
+
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 14px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      /* subtle animations */
+      .fade-in {
+        animation: fadeIn 0.42s ease both;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* small devices */
+      @media (max-width: 420px) {
+        .cover {
+          height: 160px;
+        }
+        .message {
+          font-size: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <main class="card" id="app" role="main" aria-labelledby="pageTitle">
+        <div class="head">
+          <div class="brand">
+            <div class="logo">JR</div>
+            <div>
+              <div id="pageTitle" class="title">Una sorpresa para ti</div>
+              <div class="subtitle">Abre la página desde el celular</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button id="themeToggle" class="btn icon" aria-label="Cambiar tema">
+              🌙
+            </button>
+          </div>
+        </div>
+
+        <div id="mensaje" class="message fade-in" aria-live="polite">
+          Cargando...
+        </div>
+
+        <div id="cover" class="cover">
+          <div
+            style="display: flex; align-items: center; gap: 12px"
+            class="meta"
+          >
+            <img id="art" class="art" src="" alt="Portada" />
+            <div>
+              <div id="songTitle" class="song-title">Canción</div>
+              <div id="songArtist" class="song-artist">Artista</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="left-controls">
+            <button id="nuevoBtn" class="btn primary">Nuevo</button>
+            <button id="secretBtn" class="btn ghost">Sorpresa</button>
+          </div>
+
+          <div>
+            <button id="addHome" class="btn ghost">Añadir</button>
+          </div>
+        </div>
+
+        <div id="spotifyWrap" class="spotify" aria-hidden="false"></div>
+
+        <div class="footer">
+          <div>Hecho por jersitoooon • ❤️</div>
+          <div class="muted">Cada apertura = mensaje nuevo</div>
+        </div>
+      </main>
+    </div>
+
+    <!-- modal -->
+    <div
+      id="modal"
+      style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.45);
+        place-items: center;
+        display: grid;
+        z-index: 120;
+      "
+    >
+      <div
+        style="
+          background: var(--card);
+          padding: 18px;
+          border-radius: 14px;
+          max-width: 360px;
+          text-align: center;
+        "
+      >
+        <h3 id="modalTitle">Sorpresa</h3>
+        <p id="modalMsg" style="color: var(--muted)">
+          Un mensajito especial...
+        </p>
+        <div style="margin-top: 12px">
+          <button id="modalClose" class="btn primary">Cerrar</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ===========================
+     Mensajes (ya románticos y cercanos)
+     =========================== */
+      const mensajes = [
+        "Hoy desperté sonriendo solo por pensar en ti.",
+        "Tu risa es mi canción favorita.",
+        "Me encanta cómo iluminás hasta los días nublados.",
+        "Quisiera robarte una sonrisa ahora mismo.",
+        "Contigo todo tiene un sabor distinto y mejor.",
+        "Me encanta perder la noción del tiempo cuando hablamos.",
+        "Si pudiera, te guardaría en mi bolsillo para tenerte siempre cerca.",
+        "Solo con verte mi día se vuelve mucho más fácil.",
+        "Tu mirada tiene algo que me derrite por dentro.",
+        "A tu lado las cosas simples se vuelven mágicas.",
+        "Siempre encuentro una excusa para escribirte.",
+        "Cada mensaje tuyo es como un regalo inesperado.",
+        "Me flipa cómo tu voz cambia mi ánimo al instante.",
+        "Quisiera hacerte el plan más bonito esta semana.",
+        "Me quedo con ganas de abrazarte un poquito más.",
+        "Hay un rincón tranquilo en mí que solo existe por ti.",
+        "Pensar en tus manos me calma y me alegra.",
+        "Me encanta cuando te ríes sin pensar en nada.",
+        "Si los besos fueran palabras, te llenaría de frases.",
+        "Quisiera congelar este momento contigo.",
+        "Tu compañía es como una canción que no quiero dejar de escuchar.",
+        "Me vuelves torpe de la mejor manera posible.",
+        "A veces solo cierro los ojos y te imagino sonriendo.",
+        "Contigo el silencio también suena bonito.",
+        "Me inspiras a buscar pequeños planes solo para verte.",
+        "No sé qué hice para merecerte, pero me alegro mucho.",
+        "Tu energía hace que todo se sienta bien.",
+        "Me encanta cómo me entiendes sin que lo explique todo.",
+        "Eres ese pensamiento que siempre me saca una sonrisa.",
+        "Quisiera llevarte a mi lugar favorito a verte sonreír.",
+        "Siento que contigo todo encaja un poco mejor.",
+        "Tu voz es el mejor despertador que existe.",
+        "Me apetece mandarte un abrazo largo ahora mismo.",
+        "Me encanta recordar nuestras pequeñas locuras juntos.",
+        "Cuando te veo, me olvido de lo demás por un rato.",
+        "Tu presencia convierte lo cotidiano en especial.",
+        "Me encantaría que hojeáramos un atardecer juntos.",
+        "Tus mensajes me alegran el día sin aviso previo.",
+        "Quisiera contarte un secreto: me haces muy feliz.",
+        "Me encanta cómo me miras cuando crees que no me doy cuenta.",
+        "Si pudiera, te escribiría mil notas dulces para tus bolsillos.",
+        "Me fascina tu forma de complicarle la sonrisa al mundo.",
+        "A veces pienso en tus manos y me entran ganas de tomar las mías.",
+        "Contigo todo se siente más ligero y divertido.",
+        "Tus detalles pequeños son los que más me llegan.",
+        "Me gustaría robarte tiempo para no soltarlo jamás.",
+        "Me derrito cada vez que me mandás esa foto.",
+        "Quisiera prepararte el desayuno perfecto un domingo cualquiera.",
+        "Tu risa tiene la magia de arreglar hasta el peor día.",
+        "Me encanta cómo haces que todo parezca más fácil.",
+        "Quisiera estar en tu mente por un minuto solo para saludarte.",
+        "Me flipa cómo tus ojos hablan sin decir nada.",
+        "Si existiera una receta de felicidad, llevaría tu nombre.",
+        "A tu lado aprendí que lo simple puede ser extraordinary.",
+        "Tengo ganas de mandarte un audio cantando algo tonto.",
+        "Me encanta planear tonterías solo para ver tu cara.",
+        "Contigo todo sabe mejor, incluso los días normales.",
+        "Quisiera que supieras lo mucho que me gusta verte feliz.",
+        "Tu sonrisa es el atajo más rápido a mi mejor versión.",
+        "Me encanta cuando coincidimos en las pequeñas cosas.",
+        "Quisiera que cada notificación fuera tu nombre.",
+        "Me cae bien la idea de hacer planes juntos siempre.",
+        "A veces me pongo a pensar en el día en que nos conocimos y sonrío.",
+        "Me entretengo recordando tu manera de hablar de las cosas que te apasionan.",
+        "Quisiera regalarte una tarde entera de risas.",
+        "Me encanta cómo cambias el ritmo de mis días.",
+        "Solo quiero ver cómo te iluminas cuando algo te hace feliz.",
+        "Me apetece mandarte un mensaje tonto solo para que te rías.",
+        "Contigo aprendí a disfrutar los detalles más pequeños.",
+        "Me gustaría susurrarte todas las cosas bonitas que pienso.",
+        "Quisiera que el tiempo sepa cuándo estamos juntos.",
+        "Me encanta perderme en conversaciones que no terminan.",
+        "Quisiera ser tu plan favorito para cualquier tarde.",
+        "Me quedo pensando en lo bonito que es tenerte cerca.",
+        "Tu forma de ser me atrapa sin darme cuenta.",
+        "Me encanta cómo me haces sentir sin decir nada.",
+        "Tengo ganas de inventar excusas para verte más seguido.",
+        "Me flipa tu sonrisa y cómo cambia mi día.",
+        "Me encantaría encontrar un lugar secreto solo para nosotros.",
+        "Me encanta cuando hacemos nada y todo se siente perfecto.",
+        "Quisiera escribirte poemas cortitos que te hagan sonreír.",
+        "Me apetece enamorarme un poquito más hoy… de tus ojos.",
+        "Quisiera que supieras que te pienso incluso en días raros.",
+        "Me hace feliz imaginar planes tontos contigo.",
+        "Tu voz en la noche es el mejor calmante para cualquier estrés.",
+        "Quisiera pasar un domingo entero escuchando tu risa.",
+        "Me encanta cuando me escribes sin motivo y me cambias el día.",
+        "Quisiera poder dibujar tu sonrisa y colgarla en mi cuarto.",
+        "Me derrito cuando me mirás con esa complicidad.",
+        "Me encanta que nuestras conversaciones sean mi parte favorita del día.",
+        "Quisiera que pudiéramos pausar el tiempo y quedarnos así un rato.",
+        "Tengo ganas de regalarte un día entero de pequeñas sorpresas.",
+        "Me gusta todo lo que tiene que ver con vos, incluso tus silencios.",
+        "Quisiera que cada canción bonita me recuerde a vos.",
+        "Me encanta cuando coincidimos en mirar el mismo cielo.",
+        "Quisiera abrazarte hasta que se termine el mundo (o al menos el día).",
+        "Me encanta la forma en que hacés que todo parezca posible.",
+        "Quisiera prometerte que siempre habrá alguien que te admire así.",
+      ];
+
+      /* ===========================
+     Canciones (embeds) - tu lista + las sugeridas
+     =========================== */
+      const canciones = [
+        "https://open.spotify.com/embed/track/0jT8Nl0shPS8115is0wD2Q",
+        "https://open.spotify.com/embed/track/2Honklohe9Jg9tv24YkCZC",
+        "https://open.spotify.com/embed/track/0gnYdl0uXwpFBcQLWGuDdn",
+        "https://open.spotify.com/embed/track/6xjW0WgfQLNunLGTSwZ5hA",
+        "https://open.spotify.com/embed/track/7koAf6aZgjO6TS7bipfPD0",
+        "https://open.spotify.com/embed/track/6uiQ0DqbXTBc8tl0AUKZkR",
+        "https://open.spotify.com/embed/track/6DoL1yYIwEW7VZMRaJhoJI",
+        "https://open.spotify.com/embed/track/1M790SJApJ97Fewi2lbeUg",
+        "https://open.spotify.com/embed/track/2QP041AcWg8PwPIWP95RKN",
+        "https://open.spotify.com/embed/track/6VfL3MEuYeJbDlD8m011HR",
+        "https://open.spotify.com/embed/track/5Hqxu31lSOCdgMKxZvb9Mt",
+        "https://open.spotify.com/embed/track/7E1rvGKkYsVo6vxiTiuBPQ",
+        "https://open.spotify.com/embed/track/7ricDBUakN3N0YkkKE8Obu",
+        "https://open.spotify.com/embed/track/2dg5usl6OJasRbjvUHOlcF",
+        "https://open.spotify.com/embed/track/4fFgpzgSkmn3wajioLBPOr",
+        "https://open.spotify.com/embed/track/3GhmL9fuM8jwGcHCFbeo3v",
+        "https://open.spotify.com/embed/track/2FNL8nW9rvlDKjNwJXVfm7",
+        "https://open.spotify.com/embed/track/2318Aoqig6HS9YkHGlAm8T",
+
+        // añadidas
+        "https://open.spotify.com/embed/track/0t9eyI57xCz8pPjM4pVC8w",
+        "https://open.spotify.com/embed/track/7c9UBxI3YtxKjFYpZ7HHjN",
+        "https://open.spotify.com/embed/track/6nTiIhLmQ3FWhvrGafwZkq",
+        "https://open.spotify.com/embed/track/5vdp5UmvTsnMEMESIF2Ym7",
+        "https://open.spotify.com/embed/track/2xLMifQCjYObZHCR5HOnVj",
+        "https://open.spotify.com/embed/track/0bVtevEgtDIeRjCJbK3Lmv",
+        "https://open.spotify.com/embed/track/2LOzSSufVvO1emx0y1HPMh",
+        "https://open.spotify.com/embed/track/2fXwJWm3gWPDv0hPyZCw1C",
+        "https://open.spotify.com/embed/track/2Bentv6Hr9BXWj0ZLhZcQW",
+        "https://open.spotify.com/embed/track/4lcDICL7D5qbn5y9V0sICA",
+        "https://open.spotify.com/embed/track/3ctALmweZBapfBdFiIVpJI",
+        "https://open.spotify.com/embed/track/1zsPaEkGlYhx6tnia3oVBB",
+        "https://open.spotify.com/embed/track/6i0V12jOQxJQX5lrE3e1cg",
+        "https://open.spotify.com/embed/track/7EiqP6m2hjAJXPPkISa5ZQ",
+        "https://open.spotify.com/embed/track/5JCoSi02qi3nwjlrQpFB1o",
+      ];
+
+      /* ===========================
+     Utilities + DOM refs
+     =========================== */
+      const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+      const mensajeEl = document.getElementById("mensaje");
+      const spotifyWrap = document.getElementById("spotifyWrap");
+      const art = document.getElementById("art");
+      const songTitleEl = document.getElementById("songTitle");
+      const songArtistEl = document.getElementById("songArtist");
+      const modal = document.getElementById("modal");
+      const modalMsg = document.getElementById("modalMsg");
+
+      // theme toggle
+      const themeToggle = document.getElementById("themeToggle");
+      const root = document.documentElement;
+      const savedTheme =
+        localStorage.getItem("theme") ||
+        (window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme:dark)").matches
+          ? "dark"
+          : "light");
+      if (savedTheme === "dark") root.setAttribute("data-theme", "dark");
+      themeToggle.textContent = savedTheme === "dark" ? "☀️" : "🌙";
+      themeToggle.addEventListener("click", () => {
+        const now =
+          root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        if (now === "dark") root.setAttribute("data-theme", "dark");
+        else root.removeAttribute("data-theme");
+        themeToggle.textContent = now === "dark" ? "☀️" : "🌙";
+        localStorage.setItem("theme", now);
+      });
+
+      /* ===========================
+     Show message + song (with oEmbed fallback)
+     =========================== */
+      async function nuevoShow() {
+        // message
+        mensajeEl.classList.remove("fade-in");
+        void mensajeEl.offsetWidth;
+        mensajeEl.textContent = rand(mensajes);
+        mensajeEl.classList.add("fade-in");
+
+        // choose song
+        const src = rand(canciones);
+        // normalize embed (remove utm if present)
+        const cleanSrc = src.split("?")[0];
+
+        // extract track id
+        const match = cleanSrc.match(/track\/([a-zA-Z0-9]+)$/);
+        const trackId = match ? match[1] : null;
+
+        // default placeholders
+        let title = "Escucha esta canción";
+        let author = "Spotify";
+        let thumb = null;
+
+        if (trackId) {
+          try {
+            const oembedUrl =
+              "https://open.spotify.com/oembed?url=https://open.spotify.com/track/" +
+              trackId;
+            const res = await fetch(oembedUrl);
+            if (res.ok) {
+              const j = await res.json();
+              title = j.title || title;
+              author = j.author || author;
+              thumb = j.thumbnail_url || null;
+            }
+          } catch (e) {
+            // ignore; we'll fallback to iframe and link
+          }
+        }
+
+        // set cover
+        if (thumb) {
+          art.src = thumb;
+        } else {
+          art.src =
+            'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800"><rect width="100%" height="100%" fill="%23ffeef2"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Poppins,Arial" font-size="36" fill="%23ff6b81">♪</text></svg>';
+        }
+        songTitleEl.textContent = title;
+        songArtistEl.textContent = author;
+
+        // insert iframe; add error handling: if iframe fails to load or displays page not found, show fallback
+        spotifyWrap.innerHTML = `<div style="padding:6px"><iframe id="spiframe" src="${cleanSrc}" style="border:0;width:100%;height:264px;border-radius:10px;display:block" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe></div>`;
+
+        // after short delay check if iframe loads correctly (best-effort)
+        setTimeout(async () => {
+          const iframe = document.getElementById("spiframe");
+          // try fetch the oembed as a reliable proxy: if oembed failed earlier, try fetch track page to see status
+          if (trackId) {
+            try {
+              const resp = await fetch(
+                "https://open.spotify.com/track/" + trackId,
+                { method: "HEAD" }
+              );
+              // some servers block HEAD; if status is 200 assume ok, otherwise show fallback
+              if (resp && (resp.status >= 400 || resp.type === "error")) {
+                showFallback(trackId);
+              }
+            } catch (err) {
+              // network error or blocked: still try to render iframe; if it visibly fails user will see internal spotify message
+              // optionally show small fallback link below
+              appendFallbackLink(trackId);
+            }
+          }
+        }, 900);
+      }
+
+      // fallback: show button to open in Spotify (external)
+      function appendFallbackLink(trackId) {
+        if (!trackId) return;
+        const existing = document.getElementById("fallbackLink");
+        if (existing) existing.remove();
+        const link = document.createElement("div");
+        link.id = "fallbackLink";
+        link.style.marginTop = "8px";
+        link.innerHTML = `<a class="btn ghost" href="https://open.spotify.com/track/${trackId}" target="_blank" rel="noopener" style="text-decoration:none">Abrir en Spotify</a>`;
+        spotifyWrap.appendChild(link);
+      }
+
+      function showFallback(trackId) {
+        spotifyWrap.innerHTML = `<div style="padding:18px;text-align:center;color:var(--muted)"><div style="font-weight:600;margin-bottom:6px">Esta canción no está disponible aquí</div><div style="font-size:14px;margin-bottom:12px">Pulsa para abrir en Spotify</div><a class="btn primary" href="https://open.spotify.com/track/${trackId}" target="_blank" rel="noopener">Abrir en Spotify</a></div>`;
+      }
+
+      // initial
+      nuevoShow();
+
+      // events
+      document.getElementById("nuevoBtn").addEventListener("click", nuevoShow);
+
+      // secret modal
+      const secretBtn = document.getElementById("secretBtn");
+      const modalEl = document.getElementById("modal");
+      const modalClose = document.getElementById("modalClose");
+
+      secretBtn.addEventListener("click", () => {
+        document.getElementById("modalTitle").textContent =
+          "Un mensajito extra";
+        modalMsg.textContent =
+          "Siempre haces que mi día sea mejor. Hoy quería que lo supieras de forma especial.";
+        modalEl.style.display = "grid";
+        // small confetti using CSS-ish simple approach
+        runTinyConfetti();
+      });
+      document
+        .getElementById("modalClose")
+        ?.addEventListener("click", () => (modalEl.style.display = "none"));
+
+      // add to home PWA prompt
+      const addHome = document.getElementById("addHome");
+      let deferredPrompt = null;
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        addHome.style.display = "inline-block";
+      });
+      addHome.addEventListener("click", async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          const choice = await deferredPrompt.userChoice;
+          deferredPrompt = null;
+          addHome.style.display = "none";
+        } else {
+          alert('Usa el menú del navegador → "Añadir a pantalla de inicio"');
+        }
+      });
+
+      // tiny confetti (canvas-free, DOM squares briefly)
+      function runTinyConfetti() {
+        const body = document.body;
+        const n = 30;
+        const colors = ["#ff6b81", "#ffd166", "#8bd3dd", "#a29bfe", "#ffb5e8"];
+        for (let i = 0; i < n; i++) {
+          const el = document.createElement("div");
+          el.style.position = "fixed";
+          el.style.left = 50 + (Math.random() - 0.5) * 60 + "%";
+          el.style.top = 40 + Math.random() * 20 + "%";
+          el.style.width = "8px";
+          el.style.height = "8px";
+          el.style.background =
+            colors[Math.floor(Math.random() * colors.length)];
+          el.style.opacity = "0.95";
+          el.style.borderRadius = "2px";
+          el.style.transform = `translateY(0) rotate(${
+            Math.random() * 360
+          }deg)`;
+          el.style.transition = `transform 900ms cubic-bezier(.2,.8,.2,1), opacity 900ms`;
+          body.appendChild(el);
+          requestAnimationFrame(() => {
+            el.style.transform = `translateY(${
+              80 + Math.random() * 120
+            }px) rotate(${Math.random() * 720}deg)`;
+            el.style.opacity = "0";
+          });
+          setTimeout(() => el.remove(), 1000 + Math.random() * 600);
+        }
+      }
+
+      // register tiny service worker + manifest for PWA (self-contained)
+      (function () {
+        const manifest = {
+          name: "Pequeña sorpresa",
+          short_name: "Sorpresa",
+          start_url: "/",
+          display: "standalone",
+          background_color: "#ffffff",
+          theme_color: "#ff6b81",
+        };
+        const mblob = new Blob([JSON.stringify(manifest)], {
+          type: "application/json",
+        });
+        const murl = URL.createObjectURL(mblob);
+        const link = document.createElement("link");
+        link.rel = "manifest";
+        link.href = murl;
+        document.head.appendChild(link);
+
+        if ("serviceWorker" in navigator) {
+          const swCode = `self.addEventListener('install',e=>{self.skipWaiting();});self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)))});`;
+          const swBlob = new Blob([swCode], { type: "application/javascript" });
+          const swUrl = URL.createObjectURL(swBlob);
+          navigator.serviceWorker.register(swUrl).catch(() => {});
+        }
+      })();
+
+      // accessibility: allow keyboard new
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "n") nuevoShow();
+        if (e.key === "s") secretBtn.click();
+      });
+    </script>
+  </body>
+</html>
