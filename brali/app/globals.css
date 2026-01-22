@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes pulseBorder {
+  0% {
+    box-shadow: 0 0 0 0 rgba(249,115,22,0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(249,115,22,0.15);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(249,115,22,0.35);
+  }
+}
+
+.animate-border {
+  animation: pulseBorder 3s infinite;
+}
+
+.group:hover .animate-border {
+  animation-duration: 1.2s;
+}
+
+/* === BORDE SERPIENTE ANIMADO === */
+@keyframes snakeBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.snake-border {
+  background: linear-gradient(
+    90deg,
+    #ff7a00,
+    #ffffff,
+    #ff7a00,
+    #ff7a00
+  );
+  background-size: 300% 300%;
+  animation: snakeBorder 6s linear infinite;
+}
