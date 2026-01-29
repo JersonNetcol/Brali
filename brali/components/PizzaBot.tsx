@@ -129,7 +129,7 @@ export default function PizzaBot() {
   // ----------------------
   return (
     <div className="w-full h-full p-6 flex flex-col overflow-auto">
-      {/* SALUDO INICIAL */}
+      {/* SALUDO INIIAL */}
       {step === 0 && (
         <div className="mb-4">
           <p>
